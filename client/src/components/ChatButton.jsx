@@ -1,62 +1,78 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 
+const css = `
+  .cfab-btn {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 40;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #34d399, #059669);
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 24px rgba(52,211,153,0.35);
+    transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
+    text-decoration: none;
+  }
+  .cfab-btn:hover {
+    transform: scale(1.1) translateY(-2px);
+    box-shadow: 0 8px 32px rgba(52,211,153,0.55);
+  }
+  .cfab-pulse {
+    position: absolute; inset: 0; border-radius: 50%;
+    background: rgba(52,211,153,0.3);
+    animation: cfab-pulse 2s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes cfab-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.4; }
+    50%       { transform: scale(1.18); opacity: 0; }
+  }
+  .cfab-tooltip {
+    position: absolute;
+    bottom: calc(100% + 10px); right: 0;
+    background: rgba(6,12,9,0.95);
+    border: 1px solid rgba(52,211,153,0.2);
+    color: #e7f6ee;
+    font-size: 0.78rem; font-weight: 600;
+    padding: 0.4rem 0.75rem;
+    border-radius: 10px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .cfab-btn:hover .cfab-tooltip { opacity: 1; }
+`;
 
 export default function ChatFab() {
-    const [isOpen, setIsOpen] = useState(false);
+    const { pathname } = useLocation();
 
-    const { pathname } = useLocation()
-
-    if (pathname.includes('chat')) {
-        return (
-            <></>
-        )
-    }
-
+    // Hide on admin, shop, and chat pages
+    if (
+        pathname.startsWith('/admin') ||
+        pathname.startsWith('/shop') ||
+        pathname.includes('/chat')
+    ) return null;
 
     return (
         <>
-            {/* FAB Button */}
-            <Link to="/chat">
-                <div className="fixed bottom-6 right-6 z-40">
-                    <button
-                        onClick={() => setIsOpen(!isOpen)}
-                        className="group relative w-14 h-14 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-out flex items-center justify-center"
-                        aria-label="Chat with AI"
-                    >
-                        {/* Animated background pulse */}
-                        <div className="absolute inset-0 bg-emerald-400 rounded-full animate-pulse opacity-20"></div>
-
-                        {/* Chat Icon */}
-                        <svg
-                            className="w-6 h-6 relative z-10 transition-transform duration-300 group-hover:scale-110"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                            />
-                        </svg>
-
-                        {/* Tooltip on hover */}
-                        <div className="absolute bottom-full right-0 mb-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-                            Chat with AI
-                            <div className="absolute top-full right-2 w-2 h-2 bg-gray-900 transform rotate-45"></div>
-                        </div>
-                    </button>
-                </div>
+            <style>{css}</style>
+            <Link to="/chat" className="cfab-btn" aria-label="Chat with AI">
+                <span className="cfab-pulse" />
+                <svg
+                    width="24" height="24"
+                    fill="none" stroke="#030f07" strokeWidth="2.2"
+                    strokeLinecap="round" strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                    style={{ position: 'relative', zIndex: 1 }}
+                >
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+                <span className="cfab-tooltip">Chat with AI 🤖</span>
             </Link>
-
-            {/* Optional: Animated notification badge */}
-            <div className="fixed bottom-24 right-6 z-40">
-                <div className="animate-bounce bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
-                    1
-                </div>
-            </div>
         </>
     );
 }

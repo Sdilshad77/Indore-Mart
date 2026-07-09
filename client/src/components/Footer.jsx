@@ -152,7 +152,11 @@ const COLS = [
 const Footer = () => {
   const { pathname } = useLocation()
 
-  if (pathname.includes('chat')) return null
+  if (
+    pathname.includes('chat') ||
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/shop')
+  ) return null
 
   return (
     <div className="imf-root">

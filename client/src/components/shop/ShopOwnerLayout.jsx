@@ -190,6 +190,12 @@ const css = `
     .sol-shop-badge { display: none; }
     .sol-content { padding: 20px 16px; }
   }
+  @media (max-width: 540px) {
+    .sol-user-info { display: none; }
+    .sol-header { padding: 0 12px; gap: 8px; }
+    .sol-breadcrumb { font-size: 0.95rem; }
+    .sol-content { padding: 16px 12px; overflow-x: hidden; }
+  }
 
   /* ── SCROLLBAR ── */
   .sol-nav::-webkit-scrollbar { width: 3px; }

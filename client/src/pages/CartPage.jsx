@@ -137,6 +137,11 @@ export default function CartPage() {
                 .cancel-btn { width:100%; padding:14px; background:transparent; border:0.5px solid #222; border-radius:12px; color:#888; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:border-color 0.2s, color 0.2s; }
                 .cancel-btn:hover { border-color:#444; color:#ccc; }
                 @media(max-width:900px){ .cart-grid{grid-template-columns:1fr !important;} }
+                @media(max-width:640px){
+                  .cart-table-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+                  .cart-table-inner{ min-width:480px; }
+                  .cart-container{ padding: 1rem !important; }
+                }
             `}</style>
 
             {/* BG Blobs */}

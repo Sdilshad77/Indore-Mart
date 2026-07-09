@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+client/node_modules/
+
+# Environment variables (NEVER commit these!)
+.env
+.env.local
+.env.production
+
+# Build output
+client/dist/
+client/dist-ssr/
+
+# Uploads (temp files)
+server/uploads/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+.DS_Store
+
+# OS
+Thumbs.db

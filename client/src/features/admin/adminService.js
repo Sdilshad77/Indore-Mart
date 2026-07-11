@@ -1,6 +1,9 @@
-import axios from "axios"
+import axios from "../../api/axios";
 
-const API_URL = '/api/admin'
+// const API_URL = "https://indore-mart.onrender.com/api/admin";
+
+const API_URL = "http://localhost:8080/api/admin";
+
 
 const fetchAllUsers = async (token) => {
 

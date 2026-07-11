@@ -1,4 +1,9 @@
-import axios from "axios"
+import axios from "../../api/axios";
+
+
+const API_URL = "http://localhost:8080/api/product";
+
+
 
 const fetchProducts = async () => {
     const response = await axios.get("/api/products")

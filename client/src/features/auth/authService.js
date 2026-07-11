@@ -1,4 +1,10 @@
-import axios from "axios"
+import axios from "../../api/axios";
+
+
+
+// const API_URL = "https://indore-mart.onrender.com/api/auth";
+
+const API_URL = "http://localhost:8080/api/auth";
 
 const register = async (formData) => {
     const response = await axios.post("/api/auth/register", formData)

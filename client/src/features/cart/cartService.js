@@ -1,4 +1,10 @@
-import axios from "axios"
+import axios from "../../api/axios";
+
+
+// const API_URL = "https://indore-mart.onrender.com/api/cart";
+
+
+const API_URL = "http://localhost:8080/api/cart";
 
 const addToCart = async (cartItem, token) => {
 

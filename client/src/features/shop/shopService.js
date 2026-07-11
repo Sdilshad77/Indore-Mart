@@ -1,6 +1,9 @@
-import axios from "axios"
+import axios from "../../api/axios";
 
-const API_URL = '/api/shop-owner'
+
+const API_URL = "http://localhost:8080/api/shop-owner";
+
+
 
 
 const fetchShopDetails = async (token) => {

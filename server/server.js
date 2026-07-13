@@ -57,6 +57,21 @@ app.get("/", (req, res) => {
     });
 });
 
+// Health Check Route — shows which env vars are loaded
+app.get("/api/health", (req, res) => {
+    res.status(200).json({
+        status: "ok",
+        env: {
+            MONGO_URI: !!process.env.MONGO_URI,
+            JWT_SECRET: !!process.env.JWT_SECRET,
+            GEMINI_API_KEY: !!process.env.GEMINI_API_KEY,
+            CLOUDINARY_CLOUD_NAME: !!process.env.CLOUDINARY_CLOUD_NAME,
+            CLOUDINARY_API_KEY: !!process.env.CLOUDINARY_API_KEY,
+            CLOUDINARY_API_SECRET: !!process.env.CLOUDINARY_API_SECRET,
+        }
+    });
+});
+
 // Error Handler
 app.use(errorHandler);
 

@@ -31,6 +31,10 @@ export default function CartPage() {
     const [couponCode, setCouponCode] = useState("")
     const [couponApplied, setCouponApplied] = useState(false)
     const [couponError, setCouponError] = useState("")
+    const [payLoading, setPayLoading] = useState(false)
+    // Card form state
+    const [cardForm, setCardForm] = useState({ number: '', name: '', expiry: '', cvv: '' })
+    const [cardErrors, setCardErrors] = useState({})
     // Optimistic local quantities — updated instantly on +/- click
     const [localQtys, setLocalQtys] = useState({})
 
@@ -82,7 +86,61 @@ export default function CartPage() {
     }
 
     const handleRemoveCoupon = () => setCouponApplied(false)
-    const handlePlaceOrder = (coupon) => dispatch(createOrder(coupon))
+
+    // Card input helpers
+    const formatCardNumber = (v) => v.replace(/\D/g, '').slice(0, 16).replace(/(\d{4})/g, '$1 ').trim()
+    const formatExpiry = (v) => {
+        const d = v.replace(/\D/g, '').slice(0, 4)
+        return d.length >= 3 ? d.slice(0, 2) + '/' + d.slice(2) : d
+    }
+    const handleCardChange = (e) => {
+        const { name, value } = e.target
+        let formatted = value
+        if (name === 'number') formatted = formatCardNumber(value)
+        if (name === 'expiry') formatted = formatExpiry(value)
+        if (name === 'cvv') formatted = value.replace(/\D/g, '').slice(0, 3)
+        setCardForm(prev => ({ ...prev, [name]: formatted }))
+        setCardErrors(prev => ({ ...prev, [name]: '' }))
+    }
+
+    const validateCard = () => {
+        const errs = {}
+        const rawNum = cardForm.number.replace(/\s/g, '')
+        if (rawNum.length < 16) errs.number = 'Enter a valid 16-digit card number'
+        if (!cardForm.name.trim()) errs.name = 'Enter cardholder name'
+        const [mm, yy] = (cardForm.expiry || '').split('/')
+        const month = parseInt(mm), year = parseInt('20' + yy)
+        const now = new Date()
+        if (!mm || !yy || month < 1 || month > 12 || year < now.getFullYear() || (year === now.getFullYear() && month < now.getMonth() + 1)) {
+            errs.expiry = 'Enter a valid expiry date'
+        }
+        if (cardForm.cvv.length < 3) errs.cvv = 'Enter a valid 3-digit CVV'
+        return errs
+    }
+
+    const handlePlaceOrder = async () => {
+        const errs = validateCard()
+        if (Object.keys(errs).length > 0) {
+            setCardErrors(errs)
+            return
+        }
+        setPayLoading(true)
+        try {
+            await dispatch(createOrder(couponApplied ? couponCode : '')).unwrap()
+            setIsPaymentOpen(false)
+            navigate('/order-success', {
+                state: {
+                    total,
+                    discount,
+                    couponCode: couponApplied ? couponCode : null,
+                }
+            })
+        } catch (err) {
+            toast.error(err || 'Payment failed. Please try again.')
+        } finally {
+            setPayLoading(false)
+        }
+    }
 
     // Fetch cart only once on mount
     useEffect(() => {
@@ -134,8 +192,10 @@ export default function CartPage() {
                 .modal-input { width:100%; background:#1a1a1a; border:0.5px solid #222; border-radius:12px; padding:13px 16px; color:#fff; font-size:14px; font-family:'DM Sans',sans-serif; outline:none; transition:border-color 0.25s, box-shadow 0.25s; }
                 .modal-input::placeholder { color:#444; }
                 .modal-input:focus { border-color:#00e87b; box-shadow:0 0 0 3px rgba(0,232,123,0.1); }
+                .modal-input.input-err { border-color:#ff4444 !important; }
                 .cancel-btn { width:100%; padding:14px; background:transparent; border:0.5px solid #222; border-radius:12px; color:#888; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:border-color 0.2s, color 0.2s; }
                 .cancel-btn:hover { border-color:#444; color:#ccc; }
+                @keyframes spin { to{transform:rotate(360deg)} }
 
                 /* ── CART MOBILE CARD VIEW ── */
                 .cart-table-head { display:grid; grid-template-columns:2fr 1fr 1fr 1fr 40px; padding:14px 24px; border-bottom:0.5px solid #1a1a1a; background:#0d0d0d; }
@@ -335,20 +395,55 @@ export default function CartPage() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                             <div>
                                 <label style={styles.modalLabel}>Card Number</label>
-                                <input className="modal-input" type="text" placeholder="1234 5678 9012 3456" />
+                                <input
+                                    className={`modal-input${cardErrors.number ? ' input-err' : ''}`}
+                                    type="text"
+                                    name="number"
+                                    placeholder="1234 5678 9012 3456"
+                                    value={cardForm.number}
+                                    onChange={handleCardChange}
+                                    maxLength={19}
+                                />
+                                {cardErrors.number && <p style={styles.fieldErr}>{cardErrors.number}</p>}
                             </div>
                             <div>
                                 <label style={styles.modalLabel}>Cardholder Name</label>
-                                <input className="modal-input" type="text" placeholder="Your Name" />
+                                <input
+                                    className={`modal-input${cardErrors.name ? ' input-err' : ''}`}
+                                    type="text"
+                                    name="name"
+                                    placeholder="Your Name"
+                                    value={cardForm.name}
+                                    onChange={handleCardChange}
+                                />
+                                {cardErrors.name && <p style={styles.fieldErr}>{cardErrors.name}</p>}
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                                 <div>
                                     <label style={styles.modalLabel}>Expiry Date</label>
-                                    <input className="modal-input" type="text" placeholder="MM/YY" />
+                                    <input
+                                        className={`modal-input${cardErrors.expiry ? ' input-err' : ''}`}
+                                        type="text"
+                                        name="expiry"
+                                        placeholder="MM/YY"
+                                        value={cardForm.expiry}
+                                        onChange={handleCardChange}
+                                        maxLength={5}
+                                    />
+                                    {cardErrors.expiry && <p style={styles.fieldErr}>{cardErrors.expiry}</p>}
                                 </div>
                                 <div>
                                     <label style={styles.modalLabel}>CVV</label>
-                                    <input className="modal-input" type="text" placeholder="123" />
+                                    <input
+                                        className={`modal-input${cardErrors.cvv ? ' input-err' : ''}`}
+                                        type="password"
+                                        name="cvv"
+                                        placeholder="123"
+                                        value={cardForm.cvv}
+                                        onChange={handleCardChange}
+                                        maxLength={3}
+                                    />
+                                    {cardErrors.cvv && <p style={styles.fieldErr}>{cardErrors.cvv}</p>}
                                 </div>
                             </div>
 
@@ -360,10 +455,22 @@ export default function CartPage() {
                                 </span>
                             </div>
 
-                            <button className="pay-btn" onClick={() => handlePlaceOrder(couponCode)}>
-                                Pay ₹{total?.toFixed(0)} ✦
+                            <button
+                                className="pay-btn"
+                                onClick={handlePlaceOrder}
+                                disabled={payLoading}
+                                style={{ opacity: payLoading ? 0.75 : 1 }}
+                            >
+                                {payLoading ? (
+                                    <>
+                                        <span style={{ width: 16, height: 16, border: '2px solid rgba(0,0,0,0.3)', borderTopColor: '#000', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} />
+                                        Processing...
+                                    </>
+                                ) : (
+                                    <>Pay ₹{total?.toFixed(0)} ✦</>
+                                )}
                             </button>
-                            <button className="cancel-btn" onClick={() => setIsPaymentOpen(false)}>
+                            <button className="cancel-btn" onClick={() => setIsPaymentOpen(false)} disabled={payLoading}>
                                 Cancel
                             </button>
                         </div>
@@ -435,5 +542,8 @@ const styles = {
     modalLabel: {
         display: 'block', fontSize: 11, fontWeight: 600,
         letterSpacing: '1.5px', color: '#555', textTransform: 'uppercase', marginBottom: 6,
+    },
+    fieldErr: {
+        fontSize: 11, color: '#ff4444', marginTop: 4, fontWeight: 500,
     },
 }

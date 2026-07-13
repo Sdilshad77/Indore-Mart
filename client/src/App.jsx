@@ -26,6 +26,7 @@ import CartPage from './pages/CartPage'
 import ChatPage from './pages/ChatPage'
 import ChatFab from './components/ChatButton'
 import RequestShopOwner from './components/RequestShopOwner'
+import OrderSuccess from './pages/OrderSuccess'
 
 const App = () => {
   return (
@@ -59,6 +60,7 @@ const App = () => {
           <Route path="profile" element={<ProfilePage />} />
           <Route path="cart" element={<CartPage />} />
         </Route>
+        <Route path="/order-success" element={<OrderSuccess />} />
       </Routes>
       <ChatFab />
       <Footer />

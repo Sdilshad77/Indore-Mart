@@ -64,6 +64,10 @@ function Login() {
                 .forgot-link:hover { color:#00e87b; }
                 .checkbox-custom { width:16px; height:16px; border:0.5px solid #444; border-radius:4px; background:#1a1a1a; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:border-color 0.2s, background 0.2s; }
                 .checkbox-custom.checked { background:#00e87b; border-color:#00e87b; }
+                @media(max-width:480px){
+                  .lg-card{ padding:1.5rem 1.2rem !important; }
+                  .social-row{ flex-direction:column !important; }
+                }
             `}</style>
 
             {/* BG Blobs */}
@@ -173,7 +177,7 @@ function Login() {
                 </div>
 
                 {/* Social Buttons */}
-                <div style={{ display: 'flex', gap: 12, marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', gap: 12, marginBottom: '1.5rem' }} className="social-row">
                     <button className="social-btn">
                         <svg width="18" height="18" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -235,7 +239,7 @@ const styles = {
     },
     heading: {
         fontFamily: "'Bebas Neue', sans-serif",
-        fontSize: 42, color: '#fff', lineHeight: 1, letterSpacing: 1,
+        fontSize: 'clamp(1.8rem, 8vw, 2.6rem)', color: '#fff', lineHeight: 1, letterSpacing: 1,
     },
     subtext: { color: '#888', fontSize: 13, marginTop: 6, fontWeight: 300 },
     label: { display: 'block', fontSize: 11, fontWeight: 600, letterSpacing: '1.5px', color: '#888', textTransform: 'uppercase', marginBottom: 6 },

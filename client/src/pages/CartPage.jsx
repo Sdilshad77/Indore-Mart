@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { createOrder, deleteItemFromCart, getCart, updateCart } from "../features/cart/cartSlice"
 import LoadingScreen from "../components/LoadingScreen"
 import { toast } from "react-toastify"
-import axios from "axios"
+import API from "../api/axios"
 import { useNavigate } from "react-router-dom"
 
 export default function CartPage() {
@@ -71,7 +71,7 @@ export default function CartPage() {
             return
         }
         try {
-            const response = await axios.post("/api/coupons/apply", { couponCode, shopId })
+            const response = await API.post("/api/coupons/apply", { couponCode, shopId })
             setCoupon(response.data)
             setCouponApplied(true)
             setCouponError("")
@@ -136,11 +136,24 @@ export default function CartPage() {
                 .modal-input:focus { border-color:#00e87b; box-shadow:0 0 0 3px rgba(0,232,123,0.1); }
                 .cancel-btn { width:100%; padding:14px; background:transparent; border:0.5px solid #222; border-radius:12px; color:#888; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:border-color 0.2s, color 0.2s; }
                 .cancel-btn:hover { border-color:#444; color:#ccc; }
+
+                /* ── CART MOBILE CARD VIEW ── */
+                .cart-table-head { display:grid; grid-template-columns:2fr 1fr 1fr 1fr 40px; padding:14px 24px; border-bottom:0.5px solid #1a1a1a; background:#0d0d0d; }
+                .cart-table-row { display:grid; grid-template-columns:2fr 1fr 1fr 1fr 40px; padding:16px 24px; align-items:center; gap:8px; }
+
                 @media(max-width:900px){ .cart-grid{grid-template-columns:1fr !important;} }
                 @media(max-width:640px){
-                  .cart-table-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
-                  .cart-table-inner{ min-width:480px; }
-                  .cart-container{ padding: 1rem !important; }
+                  .cart-container{ padding:1rem !important; }
+                  .cart-table-head { display:none; }
+                  .cart-table-row {
+                    grid-template-columns: 1fr;
+                    padding: 16px;
+                    gap: 12px;
+                    position: relative;
+                  }
+                  .cart-row-product { display:flex; align-items:center; gap:12px; }
+                  .cart-row-meta { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+                  .cart-row-del { position:absolute; top:14px; right:14px; }
                 }
             `}</style>
 
@@ -179,16 +192,16 @@ export default function CartPage() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                             <div style={styles.card}>
                                 {/* Table Head */}
-                                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 40px', padding: '14px 24px', borderBottom: '0.5px solid #1a1a1a', background: '#0d0d0d' }}>
+                                <div className="cart-table-head">
                                     {['Product', 'Price', 'Qty', 'Total', ''].map((h, i) => (
                                         <span key={i} style={styles.tableHead}>{h}</span>
                                     ))}
                                 </div>
 
                                 {cartItems?.products?.map((item) => (
-                                    <div key={item.product._id} className="cart-row" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 40px', padding: '16px 24px', alignItems: 'center', gap: 8 }}>
+                                    <div key={item.product._id} className="cart-row cart-table-row">
                                         {/* Product */}
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                        <div className="cart-row-product">
                                             <img
                                                 src={item.product.productImage || "/placeholder.svg"}
                                                 alt={item.product.name}
@@ -199,24 +212,29 @@ export default function CartPage() {
                                                 <p style={{ fontSize: 11, color: '#444', marginTop: 2 }}>{item.product.shop}</p>
                                             </div>
                                         </div>
-                                        {/* Price */}
-                                        <span style={{ fontSize: 13, color: '#888' }}>₹{item.product.price}</span>
-                                        {/* Qty */}
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#1a1a1a', border: '0.5px solid #222', borderRadius: 10, padding: '4px 8px', width: 'fit-content' }}>
-                                            <button className="qty-btn" onClick={() => handleUpdateCart({ cid: cartItems._id, productId: item.product._id, qty: (localQtys[item.product._id] ?? item.qty) - 1 })}>
-                                                <Minus size={13} />
-                                            </button>
-                                            <span style={{ fontSize: 13, fontWeight: 600, color: '#fff', minWidth: 20, textAlign: 'center' }}>{localQtys[item.product._id] ?? item.qty}</span>
-                                            <button className="qty-btn" onClick={() => handleUpdateCart({ cid: cartItems._id, productId: item.product._id, qty: (localQtys[item.product._id] ?? item.qty) + 1 })}>
-                                                <Plus size={13} />
+                                        {/* Price + Qty + Total on mobile = one row */}
+                                        <div className="cart-row-meta">
+                                            {/* Price */}
+                                            <span style={{ fontSize: 13, color: '#888' }}>₹{item.product.price}</span>
+                                            {/* Qty */}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#1a1a1a', border: '0.5px solid #222', borderRadius: 10, padding: '4px 8px', width: 'fit-content' }}>
+                                                <button className="qty-btn" onClick={() => handleUpdateCart({ cid: cartItems._id, productId: item.product._id, qty: (localQtys[item.product._id] ?? item.qty) - 1 })}>
+                                                    <Minus size={13} />
+                                                </button>
+                                                <span style={{ fontSize: 13, fontWeight: 600, color: '#fff', minWidth: 20, textAlign: 'center' }}>{localQtys[item.product._id] ?? item.qty}</span>
+                                                <button className="qty-btn" onClick={() => handleUpdateCart({ cid: cartItems._id, productId: item.product._id, qty: (localQtys[item.product._id] ?? item.qty) + 1 })}>
+                                                    <Plus size={13} />
+                                                </button>
+                                            </div>
+                                            {/* Total */}
+                                            <span style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>₹{item.product.price * (localQtys[item.product._id] ?? item.qty)}</span>
+                                        </div>
+                                        {/* Delete */}
+                                        <div className="cart-row-del">
+                                            <button className="del-btn" onClick={() => handleRemoveItemFromCart(item.product._id)}>
+                                                <Trash2 size={15} />
                                             </button>
                                         </div>
-                                        {/* Total */}
-                                        <span style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>₹{item.product.price * (localQtys[item.product._id] ?? item.qty)}</span>
-                                        {/* Delete */}
-                                        <button className="del-btn" onClick={() => handleRemoveItemFromCart(item.product._id)}>
-                                            <Trash2 size={15} />
-                                        </button>
                                     </div>
                                 ))}
                             </div>
@@ -384,7 +402,7 @@ const styles = {
     },
     pageTitle: {
         fontFamily: "'Bebas Neue', sans-serif",
-        fontSize: 52, color: '#fff', lineHeight: 1, letterSpacing: 1, marginBottom: 6,
+        fontSize: 'clamp(2rem, 7vw, 3.25rem)', color: '#fff', lineHeight: 1, letterSpacing: 1, marginBottom: 6,
     },
     card: {
         background: '#111', border: '0.5px solid #222', borderRadius: 20, overflow: 'hidden',

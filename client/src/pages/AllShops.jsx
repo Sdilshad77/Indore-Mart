@@ -61,6 +61,7 @@ export default function AllShops() {
                 .footer-link { color:#444; font-size:13px; text-decoration:none; transition:color 0.2s; display:block; padding:3px 0; }
                 .footer-link:hover { color:#00e87b; }
                 @media(max-width:600px){ .shops-grid{grid-template-columns:1fr;} .filter-row{flex-direction:column !important;} .search-input{width:100%;} }
+                @media(max-width:400px){ .shops-grid{grid-template-columns:1fr;gap:12px;} }
             `}</style>
 
             {/* BG Blobs */}
@@ -253,7 +254,7 @@ const styles = {
     },
     pageTitle: {
         fontFamily: "'Bebas Neue', sans-serif",
-        fontSize: 52, color: '#fff', lineHeight: 1, letterSpacing: 1, marginBottom: 6,
+        fontSize: 'clamp(2rem, 7vw, 3.25rem)', color: '#fff', lineHeight: 1, letterSpacing: 1, marginBottom: 6,
     },
     shopIcon: {
         width: 40, height: 40, flexShrink: 0,

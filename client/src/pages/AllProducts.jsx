@@ -73,6 +73,7 @@ export default function ProductsPage() {
                 .load-btn:hover { border-color:#00e87b; color:#00e87b; }
                 .products-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:16px; }
                 @media(max-width:600px){ .products-grid{grid-template-columns:repeat(2,1fr);gap:10px;} .filter-row{flex-direction:column !important;align-items:flex-start !important;} }
+                @media(max-width:400px){ .products-grid{grid-template-columns:1fr;} }
             `}</style>
 
             {/* BG Blobs */}
@@ -235,7 +236,7 @@ const styles = {
     },
     pageTitle: {
         fontFamily: "'Bebas Neue', sans-serif",
-        fontSize: 52, color: '#fff', lineHeight: 1, letterSpacing: 1, marginBottom: 6,
+        fontSize: 'clamp(2rem, 7vw, 3.25rem)', color: '#fff', lineHeight: 1, letterSpacing: 1, marginBottom: 6,
     },
     lowStockBadge: {
         position: 'absolute', top: 10, right: 10,

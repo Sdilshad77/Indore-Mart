@@ -42,6 +42,7 @@ export default function ProfilePage() {
                 .shop-btn:hover { transform:translateY(-2px); box-shadow:0 10px 25px rgba(0,232,123,0.3); }
                 .shop-btn:active { transform:scale(0.98); }
                 @media(max-width:768px){ .profile-grid{ grid-template-columns:1fr !important; } .info-grid{ grid-template-columns:1fr !important; } }
+                @media(max-width:480px){ .profile-header{ flex-direction:column-reverse !important; align-items:flex-start !important; } }
             `}</style>
 
             {showModal && <OrderDetailsModal orderDetails={orderDetails} handleOrderDetails={handleOrderDetails} />}
@@ -52,7 +53,7 @@ export default function ProfilePage() {
 
             <div style={styles.container}>
                 {/* Header */}
-                <header style={styles.header}>
+                <header style={styles.header} className="profile-header">
                     <div>
                         <div style={styles.badge}>
                             <span style={styles.badgeDot} />
@@ -255,7 +256,7 @@ const styles = {
     },
     pageTitle: {
         fontFamily: "'Bebas Neue', sans-serif",
-        fontSize: 52, color: '#fff', lineHeight: 1, letterSpacing: 1,
+        fontSize: 'clamp(2rem, 8vw, 3.25rem)', color: '#fff', lineHeight: 1, letterSpacing: 1,
     },
     avatar: {
         width: 52, height: 52,

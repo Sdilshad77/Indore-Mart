@@ -165,6 +165,12 @@ export default function ChatPage() {
         }
         .chat-input::placeholder { color: ${c.textFaint}; }
         .chat-input:focus { border-color: rgba(52,211,153,0.55); }
+
+        @media(max-width:480px) {
+            .send-btn { padding: 0 14px; }
+            .send-btn .send-label { display: none; }
+            .chat-header-text { font-size: 15px !important; }
+        }
     `;
 
     return (
@@ -353,7 +359,7 @@ export default function ChatPage() {
                             className="send-btn"
                             disabled={chatLoading || !inputValue.trim()}
                         >
-                            <span>Send</span>
+                            <span className="send-label">Send</span>
                             <Send style={{ width: '15px', height: '15px' }} />
                         </button>
                     </form>

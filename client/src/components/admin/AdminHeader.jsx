@@ -62,6 +62,11 @@ const css = `
     transition: background 0.2s, border-color 0.2s;
   }
   .adm-logout:hover { background: rgba(240,149,149,0.15); border-color: rgba(240,149,149,0.4); }
+  @media(max-width:640px){
+    .adm-header { padding: 0 12px; }
+    .adm-user-name, .adm-user-role { display: none; }
+    .adm-logout-text { display: none; }
+  }
 `;
 
 const AdminHeader = () => {
@@ -97,7 +102,7 @@ const AdminHeader = () => {
           </div>
           <button className="adm-logout" onClick={handleLogout}>
             <LogOut style={{ width: 14, height: 14 }} />
-            Logout
+            <span className="adm-logout-text">Logout</span>
           </button>
         </div>
       </header>

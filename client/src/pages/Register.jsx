@@ -81,6 +81,8 @@ function Register() {
                 .login-link:hover { color:#fff; }
                 .terms-link { color:#00e87b; text-decoration:none; }
                 .terms-link:hover { color:#fff; }
+                .two-col-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+                @media(max-width:480px){ .two-col-grid{ grid-template-columns:1fr; } }
             `}</style>
 
             {/* BG Blobs */}
@@ -125,7 +127,7 @@ function Register() {
                     </Field>
 
                     {/* Email + Phone */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div className="two-col-grid">
                         <Field label="Email">
                             <input className="reg-input" type="email" name="email" value={email} onChange={handleChange} placeholder="ur@email.com" />
                         </Field>
@@ -259,7 +261,7 @@ const styles = {
     },
     heading: {
         fontFamily: "'Bebas Neue', sans-serif",
-        fontSize: 42, color: '#fff', lineHeight: 1, letterSpacing: 1,
+        fontSize: 'clamp(1.8rem, 8vw, 2.6rem)', color: '#fff', lineHeight: 1, letterSpacing: 1,
     },
     subtext: { color: '#888', fontSize: 13, marginTop: 6, fontWeight: 300 },
     loadingWrap: {

@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import axios from 'axios';
+import API from '../../api/axios';
 
 const initialState = {
     chat: {},
@@ -55,7 +55,7 @@ export const sendMessage = createAsyncThunk("CHAT/SEND_MESSAGE", async (message,
         }
     }
     try {
-        const response = await axios.post("/api/chat", { question: message }, options)
+        const response = await API.post("/api/chat", { question: message }, options)
         return response.data
     } catch (error) {
         const message = error.response?.data?.message || error.message || 'Something went wrong. Please try again.'

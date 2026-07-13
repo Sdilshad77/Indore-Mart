@@ -1,4 +1,3 @@
-import fs from "node:fs"
 import { v2 as cloudinary } from 'cloudinary';
 import dotenv from "dotenv"
 
@@ -11,20 +10,22 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 })
 
-
-
-const uploadToCloudinary = async (fileLink) => {
-    try {
-        let response = await cloudinary.uploader.upload(fileLink, { resource_type: "auto" })
-        return response
-    } catch (error) {
-        // Safely clean up temp file if it still exists
-        try { if (fs.existsSync(fileLink)) fs.unlinkSync(fileLink) } catch (_) {}
-        console.log('Cloudinary upload error:', error.message)
-        throw error
-    }
+// Upload from buffer (memoryStorage) — no disk file needed
+const uploadToCloudinary = (fileBuffer, mimetype) => {
+    return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+            { resource_type: "auto" },
+            (error, result) => {
+                if (error) {
+                    console.log('Cloudinary upload error:', error.message)
+                    reject(error)
+                } else {
+                    resolve(result)
+                }
+            }
+        )
+        stream.end(fileBuffer)
+    })
 }
 
 export default uploadToCloudinary
-
-

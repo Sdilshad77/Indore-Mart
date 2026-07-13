@@ -1,4 +1,3 @@
-import fs from "node:fs"
 import uploadToCloudinary from "../middleware/cloudinaryMiddleware.js"
 import Coupon from "../models/couponModel.js"
 import Order from "../models/orderModel.js"
@@ -86,11 +85,8 @@ const addProduct = async (req, res) => {
         throw new Error("Please upload a product image")
     }
 
-    // Upload File To Cloudinary
-    let uploadResponse = await uploadToCloudinary(req.file.path)
-
-    // Remove temp file from server (safe — ignore if already gone)
-    try { fs.unlinkSync(req.file.path) } catch (_) {}
+    // Upload File To Cloudinary (from memory buffer — no disk file)
+    let uploadResponse = await uploadToCloudinary(req.file.buffer, req.file.mimetype)
 
 
 

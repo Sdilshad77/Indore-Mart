@@ -177,7 +177,22 @@ export default function ProfilePage() {
                                 <p style={{ fontSize: 13, color: '#666', lineHeight: 1.6, marginBottom: 20 }}>
                                     Reach thousands of local customers. Start ur store today, no cap 🏪
                                 </p>
-                                {shopStatus ? (
+                                {user.isShopOwner ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', background: 'rgba(0,232,123,0.1)', borderRadius: 12, border: '0.5px solid rgba(0,232,123,0.25)' }}>
+                                            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#00e87b', animation: 'pulse 2s infinite', flexShrink: 0 }} />
+                                            <span style={{ fontSize: 13, color: '#00e87b', fontWeight: 500 }}>Your shop is active ✅</span>
+                                        </div>
+                                        <a
+                                            href="/shop/dashboard"
+                                            className="shop-btn"
+                                            style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                                        >
+                                            <Store size={16} />
+                                            Go to My Dashboard
+                                        </a>
+                                    </div>
+                                ) : shopStatus ? (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', background: 'rgba(0,232,123,0.1)', borderRadius: 12, border: '0.5px solid rgba(0,232,123,0.25)' }}>
                                         <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#00e87b', animation: 'pulse 2s infinite', flexShrink: 0 }} />
                                         <span style={{ fontSize: 13, color: '#00e87b', fontWeight: 500 }}>Request sent! We'll hmu soon 🔥</span>

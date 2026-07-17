@@ -100,7 +100,7 @@ const authSlice = createSlice({
                 state.isLoading = false
                 state.isError = false
                 state.isSuccess = true
-                state.status = true
+                state.shopStatus = true
             })
             .addCase(becomeShopOwner.rejected, (state, action) => {
                 state.isLoading = false

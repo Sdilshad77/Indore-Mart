@@ -198,7 +198,7 @@ function OrderDetailsModal({ handleOrderDetails, orderDetails }) {
                         <div>
                             {orderData?.items.map((item, idx) => (
                                 <div
-                                    key={item.product._id}
+                                    key={item.product?._id || idx}
                                     style={{
                                         display: 'flex',
                                         alignItems: 'center',

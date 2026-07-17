@@ -12,7 +12,7 @@ const initialState = {
     shopProducts: [],
     shopOrders: [],
     shopCoupons: [],
-    edit: { shop: {}, isEdit: false }
+    edit: { product: {}, isEdit: false }
 }
 
 const shopSlice = createSlice({
@@ -24,6 +24,9 @@ const shopSlice = createSlice({
                 ...state,
                 edit: { product: action.payload, isEdit: true }
             }
+        },
+        resetEdit: (state) => {
+            state.edit = { product: {}, isEdit: false }
         }
     },
     extraReducers: (builder) => {
@@ -165,10 +168,27 @@ const shopSlice = createSlice({
                 state.shopError = true
                 state.shopErrorMessage = action.payload
             })
+            .addCase(deleteProduct.pending, (state) => {
+                state.shopLoading = true
+                state.shopSuccess = false
+                state.shopError = false
+            })
+            .addCase(deleteProduct.fulfilled, (state, action) => {
+                state.shopLoading = false
+                state.shopSuccess = true
+                state.shopProducts = state.shopProducts.filter(p => p._id !== action.payload._id)
+                state.shopError = false
+            })
+            .addCase(deleteProduct.rejected, (state, action) => {
+                state.shopLoading = false
+                state.shopSuccess = false
+                state.shopError = true
+                state.shopErrorMessage = action.payload
+            })
     }
 });
 
-export const { productEdit } = shopSlice.actions
+export const { productEdit, resetEdit } = shopSlice.actions
 
 export default shopSlice.reducer
 
@@ -286,4 +306,16 @@ export const createCoupon = createAsyncThunk("ADD/SHOP/COUPON", async (couponDet
         return thunkAPI.rejectWithValue(message)
     }
 
+})
+
+
+// Delete Product
+export const deleteProduct = createAsyncThunk("DELETE/SHOP/PRODUCT", async (productId, thunkAPI) => {
+    let token = thunkAPI.getState().auth.user.token
+    try {
+        return await shopService.deleteProduct(productId, token)
+    } catch (error) {
+        const message = error.response?.data?.message || error.message || 'Failed to delete product'
+        return thunkAPI.rejectWithValue(message)
+    }
 })

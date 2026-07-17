@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { addProduct, updateProduct } from "../../features/shop/shopSlice"
+import { addProduct, updateProduct, resetEdit } from "../../features/shop/shopSlice"
 import { X, Upload, Package } from "lucide-react"
+import { toast } from "react-toastify"
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap');
@@ -159,23 +160,30 @@ const css = `
 
 const categories = [
     { value: 'vegetables', label: '🥬 Vegetables' },
-    { value: 'fruits',     label: '🍎 Fruits' },
-    { value: 'dairy',      label: '🥛 Dairy & Eggs' },
-    { value: 'bakery',     label: '🍞 Bakery' },
-    { value: 'cloths',     label: '👕 Cloths' },
-    { value: 'other',      label: '📦 Other' },
+    { value: 'fruits', label: '🍎 Fruits' },
+    { value: 'dairy', label: '🥛 Dairy & Eggs' },
+    { value: 'bakery', label: '🍞 Bakery' },
+    { value: 'cloths', label: '👕 Cloths' },
+    { value: 'other', label: '📦 Other' },
 ];
 
 const AddProductModal = ({ showModal, handleModal }) => {
     const dispatch = useDispatch()
     const { shop, edit } = useSelector(state => state.shop)
     const [previewUrl, setPreviewUrl] = useState(null)
+    const [submitting, setSubmitting] = useState(false)
 
     // Lock background scroll while modal is open
     useEffect(() => {
         document.body.style.overflow = 'hidden'
         return () => { document.body.style.overflow = '' }
     }, [])
+
+    // Reset edit state when modal unmounts
+    const handleClose = () => {
+        dispatch(resetEdit())
+        handleModal()
+    }
 
     const [formData, setFormData] = useState({
         name: "", description: "", productImage: "",
@@ -194,24 +202,52 @@ const AddProductModal = ({ showModal, handleModal }) => {
         }
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
-        let fd = new FormData()
-        fd.append('name', name)
-        fd.append('description', description)
-        fd.append('category', category)
-        fd.append('price', price)
-        fd.append('stock', stock)
-        fd.append('shopId', shopId)
-        fd.append('productImage', formData.productImage)
-
-        !edit.isEdit
-            ? dispatch(addProduct(fd))
-            : dispatch(updateProduct({ _id: edit.product._id, ...formData }))
-
-        setFormData({ name: "", description: "", productImage: "", category: "", price: "", stock: "", shopId: shop._id })
-        setPreviewUrl(null)
-        handleModal()
+        if (submitting) return
+        setSubmitting(true)
+        try {
+            if (!edit.isEdit) {
+                // --- ADD PRODUCT ---
+                if (!formData.productImage || typeof formData.productImage === 'string') {
+                    toast.error('Please upload a product image', { position: 'top-center' })
+                    setSubmitting(false)
+                    return
+                }
+                let fd = new FormData()
+                fd.append('name', name)
+                fd.append('description', description)
+                fd.append('category', category)
+                fd.append('price', price)
+                fd.append('stock', stock)
+                fd.append('shopId', shop._id)
+                fd.append('productImage', formData.productImage)
+                const result = await dispatch(addProduct(fd))
+                if (addProduct.fulfilled.match(result)) {
+                    toast.success('Product added successfully!', { position: 'top-center' })
+                    setFormData({ name: '', description: '', productImage: '', category: '', price: '', stock: '', shopId: shop._id })
+                    setPreviewUrl(null)
+                    handleClose()
+                } else {
+                    toast.error(result.payload || 'Failed to add product', { position: 'top-center' })
+                }
+            } else {
+                // --- EDIT PRODUCT ---
+                const result = await dispatch(updateProduct({ _id: edit.product._id, ...formData, shopId: shop._id }))
+                if (updateProduct.fulfilled.match(result)) {
+                    toast.success('Product updated successfully!', { position: 'top-center' })
+                    setFormData({ name: '', description: '', productImage: '', category: '', price: '', stock: '', shopId: shop._id })
+                    setPreviewUrl(null)
+                    handleClose()
+                } else {
+                    toast.error(result.payload || 'Failed to update product', { position: 'top-center' })
+                }
+            }
+        } catch (err) {
+            toast.error('Something went wrong. Please try again.', { position: 'top-center' })
+        } finally {
+            setSubmitting(false)
+        }
     }
 
     useEffect(() => {
@@ -233,7 +269,7 @@ const AddProductModal = ({ showModal, handleModal }) => {
                             <h2 className="apm-title">{edit.isEdit ? 'Edit Product' : 'Add New Product'}</h2>
                             <p className="apm-subtitle">{edit.isEdit ? 'Update the product details below.' : 'Fill in the details to add a product to your shop.'}</p>
                         </div>
-                        <button className="apm-close" onClick={handleModal} aria-label="Close">
+                        <button className="apm-close" onClick={handleClose} aria-label="Close">
                             <X style={{ width: 14, height: 14 }} />
                         </button>
                     </div>
@@ -334,12 +370,12 @@ const AddProductModal = ({ showModal, handleModal }) => {
 
                         {/* Footer — always visible */}
                         <div className="apm-footer">
-                            <button type="button" className="apm-btn-cancel" onClick={handleModal}>
+                            <button type="button" className="apm-btn-cancel" onClick={handleClose}>
                                 Cancel
                             </button>
-                            <button type="submit" className="apm-btn-submit">
+                            <button type="submit" className="apm-btn-submit" disabled={submitting} style={{ opacity: submitting ? 0.7 : 1, cursor: submitting ? 'not-allowed' : 'pointer' }}>
                                 <Package style={{ width: 13, height: 13 }} />
-                                {edit.isEdit ? 'Update Product' : 'Add Product'}
+                                {submitting ? 'Saving...' : (edit.isEdit ? 'Update Product' : 'Add Product')}
                             </button>
                         </div>
                     </form>

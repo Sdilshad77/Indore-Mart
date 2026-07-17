@@ -40,7 +40,8 @@ const fetchAllCoupons = async (shopId, token) => {
 const createProduct = async (formData, token) => {
     const options = {
         headers: {
-            authorization: `Bearer ${token}`
+            authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
         }
     }
     const response = await API.post(`/api/shop-owner/add-product`, formData, options)
@@ -77,6 +78,12 @@ const addCoupon = async (token, couponDetails) => {
     return response.data
 }
 
-const shopService = { fetchShopDetails, fetchAllProducts, fetchAllOrders, fetchAllCoupons, createProduct, productUpdate, orderUpdate, addCoupon }
+const deleteProduct = async (productId, token) => {
+    const options = { headers: { authorization: `Bearer ${token}` } }
+    const response = await API.delete(`/api/shop-owner/product/${productId}`, options)
+    return response.data
+}
+
+const shopService = { fetchShopDetails, fetchAllProducts, fetchAllOrders, fetchAllCoupons, createProduct, productUpdate, orderUpdate, addCoupon, deleteProduct }
 
 export default shopService

@@ -4,10 +4,16 @@ import colors from "colors";
 import cors from "cors";
 import { connectDB } from "./config/dbConfig.js";
 import dns from "node:dns/promises";
+import { fileURLToPath } from "url";
+import { dirname, resolve } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
-dotenv.config();
+// Load .env from project root (one level up from server/)
+dotenv.config({ path: resolve(__dirname, "../.env") });
 
 // Routes
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -70,6 +76,9 @@ app.get("/api/health", (req, res) => {
             CLOUDINARY_API_SECRET: !!process.env.CLOUDINARY_API_SECRET,
         }
     });
+
+
+    
 });
 
 // Error Handler

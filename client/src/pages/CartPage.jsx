@@ -240,7 +240,7 @@ export default function CartPage() {
                 </header>
 
                 {/* Empty State */}
-                {(!cartItems || cartItems?.products.length === 0) ? (
+                {(!cartItems || cartItems?.products?.length === 0) ? (
                     <div style={{ textAlign: 'center', padding: '5rem 2rem', animation: 'fadeIn 0.5s ease both' }}>
                         <ShoppingCart size={48} color="#222" style={{ margin: '0 auto 16px' }} />
                         <p style={{ fontSize: 18, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 1, color: '#444' }}>Your cart is empty bestie 😭</p>
@@ -269,7 +269,7 @@ export default function CartPage() {
                                             />
                                             <div>
                                                 <p style={{ fontSize: 13, fontWeight: 500, color: '#ddd', lineHeight: 1.3 }}>{item.product.name}</p>
-                                                <p style={{ fontSize: 11, color: '#444', marginTop: 2 }}>{item.product.shop}</p>
+                                                <p style={{ fontSize: 11, color: '#444', marginTop: 2 }}>{item?.product?.shop?.name}</p>
                                             </div>
                                         </div>
                                         {/* Price + Qty + Total on mobile = one row */}

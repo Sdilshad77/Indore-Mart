@@ -68,44 +68,88 @@ const updateShop = async (req, res) => {
 
 
 const addProduct = async (req, res) => {
+    try {
+        const { name, description, price, stock, category, shopId } = req.body;
 
-    const { name, description, price, stock, category, shopId } = req.body
+        console.log("Request Body:", req.body);
 
-    console.log(req.body)
+        if (!name || !description || !price || !stock || !category) {
+            return res.status(409).json({
+                success: false,
+                message: "Please Fill All Details!",
+            });
+        }
 
-    if (!name || !description || !price || !stock || !category) {
-        res.status(409)
-        throw new Error("Please Fill All Details!")
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "Please upload a product image",
+            });
+        }
+
+        console.log("========== FILE INFO ==========");
+        console.log("File Name:", req.file.originalname);
+        console.log("File Size:", req.file.size);
+        console.log("Mime Type:", req.file.mimetype);
+        console.log("Buffer Exists:", !!req.file.buffer);
+        console.log("Buffer Length:", req.file.buffer?.length);
+        console.log("===============================");
+
+        console.log("========== ENV ==========");
+        console.log("Cloud Name :", process.env.CLOUDINARY_CLOUD_NAME);
+        console.log("API Key    :", process.env.CLOUDINARY_API_KEY);
+        console.log(
+            "API Secret :",
+            process.env.CLOUDINARY_API_SECRET ? "Loaded ✅" : "Missing ❌"
+        );
+        console.log("=========================");
+
+        // Upload image to Cloudinary
+        let uploadResponse;
+
+        try {
+            uploadResponse = await uploadToCloudinary(
+                req.file.buffer,
+                req.file.mimetype
+            );
+
+            console.log("Cloudinary Response:", uploadResponse);
+        } catch (cloudErr) {
+            console.error("========== CLOUDINARY ERROR ==========");
+            console.error(cloudErr);
+            console.error("======================================");
+
+            return res.status(500).json({
+                success: false,
+                message: cloudErr.message,
+                error: cloudErr,
+            });
+        }
+
+        const product = await Product.create({
+            name,
+            description,
+            price,
+            stock,
+            category,
+            productImage: uploadResponse.secure_url,
+            shop: shopId,
+        });
+
+        await product.populate("shop");
+
+        return res.status(201).json(product);
+    } catch (err) {
+        console.error("========== ADD PRODUCT ERROR ==========");
+        console.error(err);
+        console.error("======================================");
+
+        return res.status(500).json({
+            success: false,
+            message: err.message,
+        });
     }
-
-
-
-    if (!req.file) {
-        res.status(400)
-        throw new Error("Please upload a product image")
-    }
-
-    // Upload File To Cloudinary (from memory buffer — no disk file)
-    let uploadResponse = await uploadToCloudinary(req.file.buffer, req.file.mimetype)
-
-
-
-    const product = new Product({
-        name, description, price, stock, category, productImage: uploadResponse.secure_url, shop: shopId
-    })
-
-    await product.save()
-
-    await product.populate("shop")
-
-    if (!product) {
-        res.status(409)
-        throw new Error('Product Not Created!')
-    }
-
-
-    res.status(201).json(product)
-}
+};
 
 
 const updateProduct = async (req, res) => {
@@ -240,6 +284,16 @@ const updateOrder = async (req, res) => {
 }
 
 
-const shopOwnerController = { addProduct, addShop, updateOrder, updateProduct, updateShop, createCoupon, getMyShopOrders, getShop }
+const deleteProduct = async (req, res) => {
+    const product = await Product.findByIdAndDelete(req.params.pid)
+    if (!product) {
+        res.status(404)
+        throw new Error("Product Not Found!")
+    }
+    res.status(200).json({ _id: req.params.pid, message: "Product deleted successfully" })
+}
+
+
+const shopOwnerController = { addProduct, addShop, updateOrder, updateProduct, updateShop, createCoupon, getMyShopOrders, getShop, deleteProduct }
 
 export default shopOwnerController

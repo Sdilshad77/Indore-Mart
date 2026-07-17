@@ -1,6 +1,6 @@
-import { Plus, Search, Edit, Package } from 'lucide-react';
+import { Plus, Search, Edit, Package, Trash2 } from 'lucide-react';
 import ShopOwnerLayout from '../../components/shop/ShopOwnerLayout';
-import { getAllProducts, productEdit, getMyShopDetails } from '../../features/shop/shopSlice';
+import { getAllProducts, productEdit, getMyShopDetails, resetEdit, deleteProduct } from '../../features/shop/shopSlice';
 import { toast } from 'react-toastify';
 import LoadingScreen from '../../components/LoadingScreen';
 import { useEffect, useState } from 'react';
@@ -26,12 +26,31 @@ function ShopOwnerProducts() {
     const dispatch = useDispatch()
     const [showModal, setShowModal] = useState(false)
     const [search, setSearch] = useState('')
+    const [deleteConfirm, setDeleteConfirm] = useState(null)
 
     const handleModal = () => setShowModal(v => !v)
 
     const handleProductEdit = (product) => {
         dispatch(productEdit(product))
         setShowModal(true)
+    }
+
+    const handleOpenAddModal = () => {
+        dispatch(resetEdit())
+        setShowModal(true)
+    }
+
+    const handleDeleteClick = (product) => setDeleteConfirm(product)
+
+    const handleDeleteConfirm = async () => {
+        if (!deleteConfirm) return
+        const result = await dispatch(deleteProduct(deleteConfirm._id))
+        if (deleteProduct.fulfilled.match(result)) {
+            toast.success(`"${deleteConfirm.name}" deleted!`, { position: 'top-center' })
+        } else {
+            toast.error(result.payload || 'Failed to delete', { position: 'top-center' })
+        }
+        setDeleteConfirm(null)
     }
 
     // Step 1: ensure shop details are loaded
@@ -90,6 +109,9 @@ function ShopOwnerProducts() {
                 .prod-search::placeholder { color: ${c.textFaint}; }
                 .add-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(52,211,153,0.3); }
                 .edit-btn:hover { background: ${c.emeraldBg}; color: ${c.emerald}; }
+                .del-btn:hover { background: rgba(240,149,149,0.12) !important; color: #f09595 !important; border-color: rgba(240,149,149,0.3) !important; }
+                @keyframes del-pop { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
+                .del-modal-box { animation: del-pop 0.2s cubic-bezier(0.34,1.56,0.64,1) both; }
             `}</style>
 
             {/* Toolbar */}
@@ -107,7 +129,7 @@ function ShopOwnerProducts() {
                 </div>
                 <button
                     className="add-btn"
-                    onClick={() => setShowModal(true)}
+                    onClick={handleOpenAddModal}
                     style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', background: 'linear-gradient(135deg,#34d399,#059669)', color: '#030f07', fontWeight: 700, fontSize: '14px', border: 'none', borderRadius: '12px', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", transition: 'transform 0.2s, box-shadow 0.2s' }}
                 >
                     <Plus style={{ width: '16px', height: '16px' }} />
@@ -116,6 +138,29 @@ function ShopOwnerProducts() {
             </div>
 
             {showModal && <AddProductModal showModal={showModal} handleModal={handleModal} />}
+
+            {/* Delete Confirm Modal */}
+            {deleteConfirm && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+                    <div className="del-modal-box" style={{ background: '#0f1c16', border: '1px solid rgba(240,149,149,0.22)', borderRadius: '18px', padding: '32px 24px', maxWidth: '360px', width: '100%', textAlign: 'center' }}>
+                        <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(240,149,149,0.1)', border: '1px solid rgba(240,149,149,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
+                            <Trash2 style={{ width: 24, height: 24, color: '#f09595' }} />
+                        </div>
+                        <h3 style={{ fontFamily: "'Syne',sans-serif", color: '#e7f6ee', fontSize: 20, fontWeight: 800, margin: '0 0 10px' }}>Delete Product?</h3>
+                        <p style={{ color: '#7fa593', fontSize: 14, margin: '0 0 26px', lineHeight: 1.6 }}>
+                            <strong style={{ color: '#e7f6ee' }}>"{deleteConfirm.name}"</strong> permanently delete ho jayega. Yeh undo nahi hoga!
+                        </p>
+                        <div style={{ display: 'flex', gap: 10 }}>
+                            <button onClick={() => setDeleteConfirm(null)}
+                                style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: '1px solid rgba(52,211,153,0.18)', background: 'transparent', color: '#7fa593', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}
+                            >Cancel</button>
+                            <button onClick={handleDeleteConfirm}
+                                style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,#f09595,#e24b4a)', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}
+                            >Yes, Delete</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Table */}
             <div style={{ background: c.cardBg, border: `1px solid ${c.border}`, borderRadius: '16px', overflow: 'hidden' }}>
@@ -177,13 +222,22 @@ function ShopOwnerProducts() {
                                         </span>
                                     </td>
                                     <td style={{ ...tdStyle, borderBottom: idx === filtered.length - 1 ? 'none' : tdStyle.borderBottom }}>
-                                        <button
-                                            className="edit-btn"
-                                            onClick={() => handleProductEdit(product)}
-                                            style={{ padding: '8px', borderRadius: '10px', border: `1px solid ${c.border}`, background: 'transparent', cursor: 'pointer', color: c.textMuted, display: 'flex', alignItems: 'center', transition: 'background 0.2s, color 0.2s' }}
-                                        >
-                                            <Edit style={{ width: '15px', height: '15px' }} />
-                                        </button>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <button
+                                                className="edit-btn"
+                                                onClick={() => handleProductEdit(product)}
+                                                style={{ padding: '8px', borderRadius: '10px', border: `1px solid ${c.border}`, background: 'transparent', cursor: 'pointer', color: c.textMuted, display: 'flex', alignItems: 'center', transition: 'background 0.2s, color 0.2s' }}
+                                            >
+                                                <Edit style={{ width: '15px', height: '15px' }} />
+                                            </button>
+                                            <button
+                                                className="del-btn"
+                                                onClick={() => handleDeleteClick(product)}
+                                                style={{ padding: '8px', borderRadius: '10px', border: `1px solid ${c.border}`, background: 'transparent', cursor: 'pointer', color: c.textMuted, display: 'flex', alignItems: 'center', transition: 'background 0.2s, color 0.2s, border-color 0.2s' }}
+                                            >
+                                                <Trash2 style={{ width: '15px', height: '15px' }} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

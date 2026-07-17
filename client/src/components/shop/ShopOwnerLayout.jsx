@@ -1,7 +1,7 @@
 import { Home, Package, ShoppingBag, Tag, Store, Bell, User, ArrowLeft, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, Navigate } from 'react-router-dom';
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap');
@@ -215,6 +215,11 @@ function ShopOwnerLayout({ children, activePage = 'Dashboard' }) {
   const { user } = useSelector(state => state.auth);
   const { shop } = useSelector(state => state.shop);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // ── Auth Guard ──────────────────────────────────────────────────────────────
+  if (!user) return <Navigate to="/login" replace />
+  if (!user.isShopOwner) return <Navigate to="/auth/profile" replace />
+  // ────────────────────────────────────────────────────────────────────────────
 
   const initials = user?.name
     ? user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()

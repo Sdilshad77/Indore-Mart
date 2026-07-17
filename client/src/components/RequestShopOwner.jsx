@@ -23,11 +23,15 @@ const RequestShopOwner = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
-        dispatch(becomeShopOwner(formData))
-        if (shopStatus) {
-            toast.success("Shop Approval Request Sent!", { position: "top-center" })
+        const result = await dispatch(becomeShopOwner(formData))
+        if (becomeShopOwner.fulfilled.match(result)) {
+            toast.success("Shop Approval Request Sent! We'll review it soon 🔥", { position: "top-center" })
+            const modal = document.getElementById("shop-owner-modal")
+            if (modal) modal.style.display = "none"
+        } else {
+            toast.error(result.payload || "Request failed. Try again.", { position: "top-center" })
         }
     }
 
@@ -42,8 +46,7 @@ const RequestShopOwner = () => {
     return (
         <div
             id="shop-owner-modal"
-            className="fixed inset-0 z-50 hidden items-center justify-center p-4"
-            style={{ backgroundColor: "rgba(15, 23, 42, 0.75)", backdropFilter: "blur(6px)" }}
+            style={{ display: 'none', position: 'fixed', inset: 0, zIndex: 50, alignItems: 'center', justifyContent: 'center', padding: '16px', backgroundColor: "rgba(15, 23, 42, 0.75)", backdropFilter: "blur(6px)" }}
         >
             {/* Modal */}
             <div

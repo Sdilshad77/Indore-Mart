@@ -24,6 +24,9 @@ router.put("/order/:oid", protect.forAuthUsers, shopOwnerController.updateOrder)
 // Update Product
 router.put("/product/:pid", protect.forAuthUsers, shopOwnerController.updateProduct)
 
+// Delete Product
+router.delete("/product/:pid", protect.forAuthUsers, shopOwnerController.deleteProduct)
+
 // Update Shop
 router.put("/shop/:sid", protect.forAuthUsers, shopOwnerController.updateShop)
 
